@@ -1,0 +1,15 @@
+[package]
+name = "kernel"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[features]
+default = ["x86_64"]
+
+[dependencies]
+bootloader_api = "0.11.0"
+noto-sans-mono-bitmap = { version = "0.2.0",  features = ["default", "raster_heights_all", "font_weights_all"] }
+spinning_top = "0.2.4"
+x86_64 = { version = "0.14.10", optional = true}
