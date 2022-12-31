@@ -10,6 +10,7 @@ default = ["x86_64"]
 
 [dependencies]
 bootloader_api = "0.11.0"
+generic_once_cell = "0.1.1"
 noto-sans-mono-bitmap = { version = "0.2.0",  features = ["default", "raster_heights_all", "font_weights_all"] }
 spinning_top = "0.2.4"
 x86_64 = { version = "0.14.10", optional = true}
