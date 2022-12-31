@@ -25,10 +25,20 @@ macro_rules! println {
     ($($arg:tt)*) => ($crate::print!("{}\n", format_args!($($arg)*)));
 }
 
+#[macro_export]
+macro_rules! clearscrn {
+    () => ($crate::display::_clearscrn());
+}
+
 #[doc(hidden)]
 pub fn _print(args: fmt::Arguments) {
     use core::fmt::Write;
     TEXT_DISPLAY.lock().get_mut().expect("Uninitialized TEXT_DISPLAY").write_fmt(args).unwrap();
+}
+
+#[doc(hidden)]
+pub fn _clearscrn() {
+    TEXT_DISPLAY.lock().get_mut().expect("Uninitialized TEXT_DISPLAY").clear();
 }
 
 pub struct Display {
@@ -301,6 +311,10 @@ impl TextDisplay {
             if lines.peek().is_some() {
                 self.cursor_new_line();
             }
+        }
+        // and if it is the last line only start a new line if the last character is newline
+        if let Some(c) = text.chars().last() && c == '\n' {
+            self.cursor_new_line();
         }
     }
 
