@@ -1,6 +1,7 @@
 #![no_std]
 #![no_main]
 
+#![feature(let_chains)]
 #![feature(abi_x86_interrupt)]
 #![feature(once_cell)]
 #![feature(panic_info_message)]
@@ -24,6 +25,7 @@ fn panic(info: &PanicInfo) -> ! {
             text_display.move_cursor(display::Point(0, 0));
             if let Some(args) = info.message() {
                 text_display.set_clear_color(Color(0, 0, 0));
+                text_display.clear();
                 text_display.set_text_color(Color(255, 0, 0));
                 write!(text_display, "{}", args).unwrap();
             }
@@ -40,8 +42,13 @@ fn kernel_main(boot_info: &'static mut BootInfo) -> ! {
         Optional::None => panic!(),
     };
     TEXT_DISPLAY.lock().get_or_init(|| {TextDisplay::new(fb, Color(0, 0, 0), Color(255, 255, 0))});
-    TEXT_DISPLAY.lock().get_mut().unwrap().clear();
-    println!("hello world!");
+
+    clearscrn!();
+    println!("Booting into BeeOS.");
+
+    arch::interrupts::init();
+    println!("Interrupts initialized.");
+
     loop {
     }
 }
