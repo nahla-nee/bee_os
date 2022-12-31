@@ -121,35 +121,6 @@ impl Display {
         }
     }
 
-    pub fn draw_text(
-        &mut self,
-        text: &str,
-        color: Color,
-        height: RasterHeight,
-        weight: FontWeight,
-        position: Point,
-    ) {
-        let x_offset = get_raster_width(weight, height);
-        let y_offset = get_raster_height(height);
-        let mut current_x_offset = 0;
-        let mut current_y_offset = 0;
-        for c in text.chars() {
-            if c == '\n' {
-                current_y_offset += y_offset;
-                current_x_offset = 0;
-            } else {
-                self.putc(
-                    c,
-                    color,
-                    height,
-                    weight,
-                    Point(position.0 + current_x_offset, position.1 + current_y_offset),
-                );
-                current_x_offset += x_offset;
-            }
-        }
-    }
-
     pub fn putc(
         &mut self,
         c: char,
