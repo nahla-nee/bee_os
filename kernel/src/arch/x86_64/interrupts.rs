@@ -1,10 +1,9 @@
+use spin::Lazy;
 use x86_64::structures::idt::{InterruptDescriptorTable, InterruptStackFrame};
-use spinning_top::RawSpinlock;
-use generic_once_cell::Lazy;
 
 use crate::println;
 
-static IDT: Lazy<RawSpinlock, InterruptDescriptorTable> = Lazy::new(|| {
+static IDT: Lazy<InterruptDescriptorTable> = Lazy::new(|| {
     let mut idt = InterruptDescriptorTable::new();
     idt.breakpoint.set_handler_fn(breakpoint_handler);
     idt.double_fault.set_handler_fn(double_fault_handler);

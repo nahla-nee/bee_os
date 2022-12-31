@@ -41,7 +41,9 @@ fn kernel_main(boot_info: &'static mut BootInfo) -> ! {
         Optional::Some(fb) => fb,
         Optional::None => panic!(),
     };
-    TEXT_DISPLAY.lock().get_or_init(|| {TextDisplay::new(fb, Color(0, 0, 0), Color(255, 255, 0))});
+    TEXT_DISPLAY.lock().get_or_init(|| {
+        TextDisplay::new(fb, Color(0, 0, 0), Color(255, 255, 0))
+    });
 
     clearscrn!();
     println!("Booting into BeeOS.");

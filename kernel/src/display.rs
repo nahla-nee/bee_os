@@ -2,7 +2,7 @@ use core::{fmt, cell::OnceCell};
 
 use bootloader_api::info::{FrameBuffer, FrameBufferInfo};
 use noto_sans_mono_bitmap::{get_raster, get_raster_width, FontWeight, RasterHeight};
-use spinning_top::Spinlock;
+use spin::Mutex;
 
 /// (R, G, B) color
 #[derive(Clone, Copy)]
@@ -12,7 +12,7 @@ pub struct Color(pub u8, pub u8, pub u8);
 #[derive(Clone, Copy)]
 pub struct Point(pub usize, pub usize);
 
-pub static TEXT_DISPLAY: Spinlock<OnceCell<TextDisplay>> = Spinlock::new(OnceCell::new());
+pub static TEXT_DISPLAY: Mutex<OnceCell<TextDisplay>> = Mutex::new(OnceCell::new());
 
 #[macro_export]
 macro_rules! print {

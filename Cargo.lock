@@ -297,7 +297,7 @@ version = "0.1.0"
 dependencies = [
  "bootloader_api",
  "noto-sans-mono-bitmap",
- "spinning_top",
+ "spin",
  "x86_64",
 ]
 
@@ -481,10 +481,10 @@ dependencies = [
 ]
 
 [[package]]
-name = "spinning_top"
-version = "0.2.4"
+name = "spin"
+version = "0.9.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "75adad84ee84b521fb2cca2d4fd0f1dab1d8d026bda3c5bea4ca63b5f9f9293c"
+checksum = "7f6002a767bff9e83f8eeecf883ecb8011875a21ae8da43bffb817a57e78cc09"
 dependencies = [
  "lock_api",
 ]
