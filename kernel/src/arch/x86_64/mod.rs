@@ -1,4 +1,4 @@
-mod exceptions;
+pub mod interrupts;
 
 use super::QemuExitCode;
 
