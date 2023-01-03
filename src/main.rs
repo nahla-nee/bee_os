@@ -10,6 +10,8 @@ fn main() -> Result<()> {
         .arg(format!("format=raw,file={uefi_path}"));
     cmd.arg("-device")
         .arg("isa-debug-exit,iobase=0xf4,iosize=0x04");
+    cmd.arg("-serial")
+        .arg("stdio");
 
     let mut child = cmd.spawn()?;
     child.wait()?;
