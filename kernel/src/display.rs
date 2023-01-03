@@ -1,4 +1,4 @@
-use core::{fmt, cell::OnceCell};
+use core::{cell::OnceCell, fmt};
 
 use bootloader_api::info::{FrameBuffer, FrameBufferInfo};
 use noto_sans_mono_bitmap::{get_raster, get_raster_width, FontWeight, RasterHeight};
@@ -27,18 +27,29 @@ macro_rules! println {
 
 #[macro_export]
 macro_rules! clearscrn {
-    () => ($crate::display::_clearscrn());
+    () => {
+        $crate::display::_clearscrn()
+    };
 }
 
 #[doc(hidden)]
 pub fn _print(args: fmt::Arguments) {
     use core::fmt::Write;
-    TEXT_DISPLAY.lock().get_mut().expect("Uninitialized TEXT_DISPLAY").write_fmt(args).unwrap();
+    TEXT_DISPLAY
+        .lock()
+        .get_mut()
+        .expect("Uninitialized TEXT_DISPLAY")
+        .write_fmt(args)
+        .unwrap();
 }
 
 #[doc(hidden)]
 pub fn _clearscrn() {
-    TEXT_DISPLAY.lock().get_mut().expect("Uninitialized TEXT_DISPLAY").clear();
+    TEXT_DISPLAY
+        .lock()
+        .get_mut()
+        .expect("Uninitialized TEXT_DISPLAY")
+        .clear();
 }
 
 pub struct Display {
@@ -97,7 +108,11 @@ impl Display {
     }
 
     pub fn clear(&mut self, color: Color) {
-        self.draw_rect(color, Point(0, 0), Point(self.fb_info.width, self.fb_info.height));
+        self.draw_rect(
+            color,
+            Point(0, 0),
+            Point(self.fb_info.width, self.fb_info.height),
+        );
     }
 
     pub fn draw_rect(&mut self, color: Color, top_left: Point, bottom_right: Point) {
@@ -162,11 +177,13 @@ impl Display {
         // convert from (x, y) coordinates to real pixel position coordinates
         for y in 0..height {
             // we copy one horizontal line at a time
-            let src_line_start = self.pixel_pos_to_real(Point(src.0, src.1+y));
-            let src_line_end = self.pixel_pos_to_real(Point(src.0+width, src.1+y));
-            let dst_line_start = self.pixel_pos_to_real(Point(dst.0, dst.1+y));
+            let src_line_start = self.pixel_pos_to_real(Point(src.0, src.1 + y));
+            let src_line_end = self.pixel_pos_to_real(Point(src.0 + width, src.1 + y));
+            let dst_line_start = self.pixel_pos_to_real(Point(dst.0, dst.1 + y));
 
-            self.fb.buffer_mut().copy_within(src_line_start..src_line_end, dst_line_start);
+            self.fb
+                .buffer_mut()
+                .copy_within(src_line_start..src_line_end, dst_line_start);
         }
     }
 }
@@ -264,8 +281,11 @@ impl TextDisplay {
 
         let min_y = line * Self::raster_height();
         let max_y = min_y + Self::raster_height();
-        self.display.draw_rect(self.clear_color, Point(0, min_y),
-            Point(self.display.fb_info.width, max_y));
+        self.display.draw_rect(
+            self.clear_color,
+            Point(0, min_y),
+            Point(self.display.fb_info.width, max_y),
+        );
     }
 
     pub fn write_text(&mut self, text: &str) {
@@ -274,8 +294,13 @@ impl TextDisplay {
             for c in line.chars() {
                 let x = self.cursor.0 * Self::raster_width();
                 let y = self.cursor.1 * Self::raster_height();
-                self.display
-                    .putc(c, self.text_color, RasterHeight::Size20, FontWeight::Regular, Point(x, y));
+                self.display.putc(
+                    c,
+                    self.text_color,
+                    RasterHeight::Size20,
+                    FontWeight::Regular,
+                    Point(x, y),
+                );
                 self.increment_cursor_pos();
             }
             // we only want to print a newline if this isn't the last line.
@@ -292,10 +317,10 @@ impl TextDisplay {
     pub fn scroll_down(&mut self) {
         for line in 1..self.height {
             unsafe {
-                self.copy_line(line, line-1);
+                self.copy_line(line, line - 1);
             }
         }
-        self.clear_line(self.height-1);
+        self.clear_line(self.height - 1);
         if self.cursor.1 != 0 {
             self.cursor.1 -= 1;
         }
@@ -304,8 +329,12 @@ impl TextDisplay {
     pub unsafe fn copy_line(&mut self, src: usize, dst: usize) {
         let src_y = src * Self::raster_height();
         let dst_y = dst * Self::raster_height();
-        self.display.copy_rect(Point(0, src_y), Point(0, dst_y), Self::raster_width()*self.width,
-            Self::raster_height())
+        self.display.copy_rect(
+            Point(0, src_y),
+            Point(0, dst_y),
+            Self::raster_width() * self.width,
+            Self::raster_height(),
+        )
     }
 }
 
