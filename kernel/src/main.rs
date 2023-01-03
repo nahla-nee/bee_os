@@ -7,12 +7,15 @@
 
 mod arch;
 mod display;
+mod serial;
 
-use core::cell::OnceCell;
 use core::fmt::Write;
 use core::panic::PanicInfo;
 
+use uart_16550::SerialPort;
 use bootloader_api::{entry_point, info::Optional, BootInfo};
+
+use serial::DEBUG_SERIAL;
 use display::TEXT_DISPLAY;
 use display::{Color, TextDisplay};
 
@@ -30,6 +33,14 @@ fn panic(info: &PanicInfo) -> ! {
             }
         }
     }
+    if let Some(mut lock) = DEBUG_SERIAL.try_lock() {
+        if let Some(debug_serial) = lock.get_mut() {
+            if let Some(&args) = info.message() {
+                let _ = debug_serial.write_fmt(args);
+                let _ = debug_serial.write_char('\n');
+            }
+        }
+    }
 
     loop {}
 }
@@ -40,15 +51,29 @@ fn kernel_main(boot_info: &'static mut BootInfo) -> ! {
         Optional::Some(fb) => fb,
         Optional::None => panic!(),
     };
+
     TEXT_DISPLAY
         .lock()
         .get_or_init(|| TextDisplay::new(fb, Color(0, 0, 0), Color(255, 255, 0)));
+    DEBUG_SERIAL
+        .lock()
+        .get_or_init(|| {
+            let mut serial = unsafe { SerialPort::new(0x3F8) };
+            serial.init();
+            serial
+        });
 
     clearscrn!();
-    println!("Booting into BeeOS.");
+    log("Booting into BeeOS.");
 
     arch::interrupts::init();
-    println!("Interrupts initialized.");
+    log("Interrupts initialized.");
+
 
     loop {}
+}
+
+fn log(message: &str) {
+    println!("{}", message);
+    serial_println!("{}", message);
 }
