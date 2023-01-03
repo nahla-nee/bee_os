@@ -4,6 +4,8 @@ use bootloader_api::info::{FrameBuffer, FrameBufferInfo};
 use noto_sans_mono_bitmap::{get_raster, get_raster_width, FontWeight, RasterHeight};
 use spin::Mutex;
 
+use crate::serial_println;
+
 /// (R, G, B) color
 #[derive(Clone, Copy)]
 pub struct Color(pub u8, pub u8, pub u8);
@@ -147,9 +149,9 @@ impl Display {
         // The largest x point this raster will draw to
         let max_x = position.0 + get_raster_width(weight, height);
         // The largest y point this raster will draw to
-        let max_y = position.1 + get_raster_height(height);
+        let max_y = position.1 + height.val();
         if max_x >= self.fb_info.width || max_y >= self.fb_info.height {
-            panic!("Given coordinates are outside framebuffer bounds")
+            panic!("Printing character would exceed framebuffer bounds")
         }
 
         let raster = match get_raster(c, FontWeight::Regular, RasterHeight::Size16) {
@@ -188,18 +190,9 @@ impl Display {
     }
 }
 
-const fn get_raster_height(height: RasterHeight) -> usize {
-    match height {
-        RasterHeight::Size16 => 16,
-        RasterHeight::Size20 => 20,
-        RasterHeight::Size24 => 24,
-        RasterHeight::Size32 => 32,
-    }
-}
-
 pub struct TextDisplay {
     // x, y coordinates of column and row, in chars
-    cursor: Point,
+    pub cursor: Point,
     // Width in terms of how many chars fit on a line
     width: usize,
     // Height in terms of how many lines fit in the framebuffer
@@ -216,8 +209,8 @@ impl TextDisplay {
         let display = Display::new(fb);
         let cursor = Point(0, 0);
         let width =
-            display.fb_info.stride / get_raster_width(FontWeight::Regular, RasterHeight::Size20);
-        let height = display.fb_info.height / get_raster_height(RasterHeight::Size20);
+            display.fb_info.width / get_raster_width(FontWeight::Regular, RasterHeight::Size20);
+        let height = display.fb_info.height / RasterHeight::Size20.val();
 
         TextDisplay {
             cursor,
@@ -234,7 +227,7 @@ impl TextDisplay {
     }
 
     const fn raster_height() -> usize {
-        get_raster_height(RasterHeight::Size20)
+        RasterHeight::Size20.val()
     }
 
     pub fn move_cursor(&mut self, position: Point) {
@@ -245,19 +238,18 @@ impl TextDisplay {
     }
 
     pub fn increment_cursor_pos(&mut self) {
-        self.cursor.0 = (self.cursor.0 + 1) % self.width;
-        if self.cursor.0 == 0 {
-            self.cursor.1 += 1;
-            if self.cursor.1 == self.height {
-                self.scroll_down();
-            }
+        if self.cursor.0 == self.width-1 {
+            self.cursor_new_line();
+        }
+        else {
+            self.cursor.0 = (self.cursor.0 + 1) % self.width;
         }
     }
 
     pub fn cursor_new_line(&mut self) {
         self.cursor.0 = 0;
         self.cursor.1 += 1;
-        if self.cursor.1 == self.height {
+        if self.cursor.1 >= self.height-1 {
             self.scroll_down();
         }
     }
@@ -294,6 +286,8 @@ impl TextDisplay {
             for c in line.chars() {
                 let x = self.cursor.0 * Self::raster_width();
                 let y = self.cursor.1 * Self::raster_height();
+
+                serial_println!("cursor position: ({}, {}), text: {}", self.cursor.0, self.cursor.1, text);
                 self.display.putc(
                     c,
                     self.text_color,
@@ -308,7 +302,7 @@ impl TextDisplay {
                 self.cursor_new_line();
             }
         }
-        // and if it is the last line only start a new line if the last character is newline
+        // and on the last line only start a new line if the last character is newline
         if let Some(c) = text.chars().last() && c == '\n' {
             self.cursor_new_line();
         }
