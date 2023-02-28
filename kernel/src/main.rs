@@ -69,7 +69,6 @@ fn kernel_main(boot_info: &'static mut BootInfo) -> ! {
     arch::interrupts::init();
     log("Interrupts initialized.");
 
-
     loop {}
 }
 

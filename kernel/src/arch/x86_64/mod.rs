@@ -1,4 +1,5 @@
 pub mod interrupts;
+pub mod gdt;
 
 use super::QemuExitCode;
 

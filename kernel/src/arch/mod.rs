@@ -14,8 +14,9 @@ pub fn exit_qemu(exit_code: QemuExitCode) {
 }
 
 pub mod interrupts {
+    #[cfg(feature = "x86_64")]
     pub fn init() {
-        #[cfg(feature = "x86_64")]
         super::x86_64::interrupts::init_idt();
+        super::x86_64::gdt::init_gdt();
     }
 }
