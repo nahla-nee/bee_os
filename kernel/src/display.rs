@@ -4,8 +4,6 @@ use bootloader_api::info::{FrameBuffer, FrameBufferInfo};
 use noto_sans_mono_bitmap::{get_raster, get_raster_width, FontWeight, RasterHeight};
 use spin::Mutex;
 
-use crate::serial_println;
-
 /// (R, G, B) color
 #[derive(Clone, Copy)]
 pub struct Color(pub u8, pub u8, pub u8);
@@ -287,7 +285,6 @@ impl TextDisplay {
                 let x = self.cursor.0 * Self::raster_width();
                 let y = self.cursor.1 * Self::raster_height();
 
-                serial_println!("cursor position: ({}, {}), text: {}", self.cursor.0, self.cursor.1, text);
                 self.display.putc(
                     c,
                     self.text_color,
