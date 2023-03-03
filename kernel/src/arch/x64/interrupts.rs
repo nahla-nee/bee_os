@@ -1,5 +1,13 @@
 use spin::Lazy;
 use x86_64::structures::idt::{InterruptDescriptorTable, InterruptStackFrame};
+use pic8259::ChainedPics;
+
+pub const PIC_1_OFFSET: u8 = 32;
+pub const PIC_2_OFFSET: u8 = PIC_1_OFFSET + 8;
+
+pub static PICS: spin::Mutex<ChainedPics> =
+    spin::Mutex::new(unsafe { ChainedPics::new(PIC_1_OFFSET, PIC_2_OFFSET) });
+
 
 use crate::println;
 
@@ -17,6 +25,10 @@ static IDT: Lazy<InterruptDescriptorTable> = Lazy::new(|| {
 
 pub fn init_idt() {
     IDT.load();
+}
+
+pub fn init_pic8529() {
+    unsafe { PICS.lock().initialize() }
 }
 
 extern "x86-interrupt" fn breakpoint_handler(stack_frame: InterruptStackFrame) {
