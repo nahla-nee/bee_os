@@ -12,6 +12,14 @@ fn main() -> Result<()> {
         .arg("isa-debug-exit,iobase=0xf4,iosize=0x04");
     cmd.arg("-serial")
         .arg("stdio");
+    cmd.arg("-D")
+        .arg("qemu-log.txt");
+    cmd.arg("-d")
+        .arg("guest_errors,int");
+    cmd.arg("-M")
+        .arg("smm=off");
+    cmd.arg("-no-reboot");
+    cmd.arg("-no-shutdown");
 
     let mut child = cmd.spawn()?;
     child.wait()?;
