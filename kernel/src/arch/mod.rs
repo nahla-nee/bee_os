@@ -17,11 +17,19 @@ pub fn exit_qemu(exit_code: QemuExitCode) {
 pub fn init() {
     use crate::log;
 
+    log("Initializing GDT");
     x64::gdt::init_gdt();
     log("GDT initialized");
+
+    log("Initializing IDT");
     x64::interrupts::init_idt();
     log("IDT initialized");
+
+    log("Initializing PIC8529");
     x64::interrupts::init_pic8529();
     log("PIC8529 initialized");
+
+    log("Enabling interrupts");
     x86_64::instructions::interrupts::enable();
+    log("Interrupts enabled");
 }

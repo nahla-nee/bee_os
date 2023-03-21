@@ -35,12 +35,16 @@ macro_rules! clearscrn {
 #[doc(hidden)]
 pub fn _print(args: fmt::Arguments) {
     use core::fmt::Write;
-    TEXT_DISPLAY
+    use x86_64::instructions::interrupts;
+
+    interrupts::without_interrupts(|| {
+        TEXT_DISPLAY
         .lock()
         .get_mut()
         .expect("Uninitialized TEXT_DISPLAY")
         .write_fmt(args)
         .unwrap();
+    });
 }
 
 #[doc(hidden)]

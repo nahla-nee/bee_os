@@ -24,10 +24,8 @@ use display::{Color, TextDisplay};
 fn panic(info: &PanicInfo) -> ! {
     if let Some(mut lock) = TEXT_DISPLAY.try_lock() {
         if let Some(text_display) = lock.get_mut() {
-            text_display.move_cursor(display::Point(0, 0));
             if let Some(args) = info.message() {
                 text_display.set_clear_color(Color(0, 0, 0));
-                text_display.clear();
                 text_display.set_text_color(Color(255, 0, 0));
                 write!(text_display, "{}", args).unwrap();
             }
@@ -64,15 +62,27 @@ fn kernel_main(boot_info: &'static mut BootInfo) -> ! {
         });
 
     clearscrn!();
-    log("Booting into BeeOS.");
+    log("Booting into BeeOS");
 
-    arch::interrupts::init();
-    log("Interrupts initialized.");
+    arch::init();
+    log("x86_64 initialized");
 
     loop {}
 }
 
 fn log(message: &str) {
-    println!("{}", message);
-    serial_println!("{}", message);
+    use x86_64::instructions::interrupts;
+
+    interrupts::without_interrupts(|| {
+        if let Some(mut lock) = TEXT_DISPLAY.try_lock() {
+            if let Some(text_display) = lock.get_mut() {
+                write!(text_display, "{}\n", message).unwrap();
+            }
+        }
+    });
+    if let Some(mut lock) = DEBUG_SERIAL.try_lock() {
+        if let Some(debug_serial) = lock.get_mut() {
+            let _ = debug_serial.write_fmt(format_args!("{}\n", message));
+        }
+    }
 }
