@@ -16,3 +16,4 @@ spin = { version = "0.9.4", features = ["lock_api", "mutex", "spin_mutex", "lazy
 uart_16550 = "0.2.18"
 x86_64 = { version = "0.14.10", optional = true}
 pic8259 = "0.10.3"
+pc-keyboard = "0.7.0"
